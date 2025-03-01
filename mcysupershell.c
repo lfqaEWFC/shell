@@ -264,10 +264,10 @@ void doline(char **args) {
                                 if(strcmp(pipe_args[i][j],">") == 0 || strcmp(pipe_args[i][j],">>") == 0){
                                     strcpy(outputfile,pipe_args[i][j+1]);
                                     if(outputflag){
-                                        outfd = open(outputfile,O_RDWR|O_CREAT|O_FSYNC);
+                                        outfd = open(outputfile,O_RDWR|O_CREAT|O_FSYNC,0754);
                                     }
                                     if(addflag){
-                                        outfd = open(outputfile,O_CREAT|O_RDWR|O_APPEND);
+                                        outfd = open(outputfile,O_CREAT|O_RDWR|O_APPEND,0754);
                                     }
                                     dup2(outfd,STDOUT_FILENO);
                                     close(outfd);
