@@ -4,6 +4,8 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <fcntl.h>
+#include <signal.h>
+#include <unistd.h>
 
 #define MAXCH 64
 #define DELIM "\t \r\n"
@@ -12,6 +14,9 @@ char *readline();
 char **spiltline(char *line);
 void doline(char **args);
 int checkcommand(char **args);
+void sig_hangler(int signum){
+    printf("ctrl+c is blocked\n");
+}
 
 void mysh_loop() {
     char *line;
@@ -34,6 +39,7 @@ void mysh_loop() {
             continue;
         }
         doline(args);
+        
 
         free(line);
         free(args);
@@ -197,7 +203,7 @@ void doline(char **args) {
                 exit(0);
             }
             if (pipeflag) {
-                int pipe_count = 0;
+                int pipe_count = 0; //这里的pipecount计数的是命令数而不是管道数
                 char ***pipe_args = (char***)malloc(MAXCH * sizeof(char **));
                 int arg_start = 0;
 
@@ -264,10 +270,10 @@ void doline(char **args) {
                                 if(strcmp(pipe_args[i][j],">") == 0 || strcmp(pipe_args[i][j],">>") == 0){
                                     strcpy(outputfile,pipe_args[i][j+1]);
                                     if(outputflag){
-                                        outfd = open(outputfile,O_RDWR|O_CREAT|O_FSYNC,0754);
+                                        outfd = open(outputfile, O_RDWR|O_CREAT|O_FSYNC, 0754);
                                     }
                                     if(addflag){
-                                        outfd = open(outputfile,O_CREAT|O_RDWR|O_APPEND,0754);
+                                        outfd = open(outputfile, O_CREAT|O_RDWR|O_APPEND, 0754);
                                     }
                                     dup2(outfd,STDOUT_FILENO);
                                     close(outfd);
@@ -305,6 +311,7 @@ void doline(char **args) {
                 free(pids);
                 free(pipe_args);
                 exit(0);
+
             }
         default:
             break;
@@ -318,5 +325,6 @@ void doline(char **args) {
 }
 
 int main(int argc, char *argv[]) {
+    signal(SIGINT,sig_hangler);
     mysh_loop();
 }
